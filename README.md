@@ -49,7 +49,11 @@ The scRNA-seq and snATAC-seq data generated in this study will be made available
 
 Custom scripts used for data preprocessing, statistical analysis and visualization are provided in this repository.
 
-# sessionInfo()
+## R Package Versions
+
+The following R package versions were used for the main analyses:
+
+```text
 JASPAR2020_0.99.10
 ggsignif_0.6.4
 harmony_0.1.1
@@ -102,6 +106,8 @@ scDblFinder_1.10.0
 BiocParallel_1.30.3
 writexl_1.4.1
 Signac_1.10.0
+```
+
 
 
 ## Citation
