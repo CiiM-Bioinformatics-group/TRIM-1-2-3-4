@@ -9,6 +9,7 @@ plan("multiprocess", workers = 10)
 options(future.globals.maxSize = 80 * 1024^10)
 combined = readRDS("../merged_unprocessedObj.rds")
 
+#For integration, we tried two different methods: FindIntegrationAnchors+IntegrateEmbeddings and harmony. 
 
 ##IntegrateEmbeddings 
 combined_filtered = subset(combined,subset = nCount_ATAC < 17000 & nCount_ATAC > 1500 & TSS.enrichment < 10 & TSS.enrichment > 3 & nucleosome_signal < 3)
