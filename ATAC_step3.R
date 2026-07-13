@@ -7,7 +7,8 @@ library(SeuratData)
 
 
 pbmc_rna <- readRDS("../../combined_integrated_harmony_sampleNpool_annot.rds")
-pbmc_atac <- readRDS("./ATACIntegrated_harmony.rds")
+pbmc_atac <- readRDS("./ATACIntegrated.rds")
+#pbmc_atac <- readRDS("./ATACIntegrated_harmony.rds")
 DefaultAssay(pbmc_atac) <- 'RNA'
 pbmc_rna <- UpdateSeuratObject(pbmc_rna)
 transfer.anchors <- FindTransferAnchors(
