@@ -23,7 +23,8 @@ Peripheral blood mononuclear cells (PBMCs) from healthy donors were trained in v
 | `TIGs_accross4types.R` | Heatmap for comparison the effect size of TIGs across 4 TRIMs. Enrichment for the module genes. |
 | `cell_cell_interaction.R` | CellChat analysis comparing trained conditions with matched RPMI controls. |
 | `Regulon_scenic_pipeline.R` | R workflow for regulon activity analysis, differential regulon activity testing and TIG-associated TF prioritization. |
-| `ATAC_step1.R`,`ATAC_step2.R`,`ATAC_step3.R` | Steps for snATAC-seq data pre-processiong and integration. |
+| `ATAC_step1.R`, `ATAC_step2.R`, `ATAC_step3.R` | Steps for snATAC-seq data pre-processiong and integration. |
+| `dapeak.R`,`daTF.R` | Differential accessibility peaks and differential acitivity TFs. |
 | `Regulon_scenic_commands.md` | Python and shell commands used to create loom files and run pySCENIC. |
 | `trim_external_disease_gsea_pipeline.R` | Gene set enrichment analysis of TRIM-induced gene signatures in external disease datasets. |
 
@@ -49,32 +50,60 @@ The scRNA-seq and snATAC-seq data generated in this study will be made available
 Custom scripts used for data preprocessing, statistical analysis and visualization are provided in this repository.
 
 # sessionInfo()
-[1] JASPAR2020_0.99.10                BiocParallel_1.30.3              
- [3] scDblFinder_1.10.0                ggsignif_0.6.4                   
- [5] harmony_0.1.1                     Rcpp_1.0.10                      
- [7] glmGamPoi_1.8.0                   DoubletFinder_2.0.3              
- [9] readxl_1.4.0                      circlize_0.4.15                  
-[11] ComplexHeatmap_2.12.1             ReactomePA_1.40.0                
-[13] TFBSTools_1.34.0                  DOSE_3.22.0                      
-[15] org.Hs.eg.db_3.15.0               clusterProfiler_4.4.4            
-[17] EnhancedVolcano_1.14.0            BSgenome.Hsapiens.UCSC.hg38_1.4.4
-[19] BSgenome_1.64.0                   rtracklayer_1.56.1               
-[21] Biostrings_2.64.0                 XVector_0.36.0                   
-[23] EnsDb.Hsapiens.v86_2.99.0         ensembldb_2.20.2                 
-[25] AnnotationFilter_1.20.0           GenomicFeatures_1.48.3           
-[27] AnnotationDbi_1.58.0              forcats_0.5.1                    
-[29] stringr_1.4.1                     purrr_1.0.2                      
-[31] readr_2.1.2                       tidyr_1.2.0                      
-[33] tibble_3.2.1                      tidyverse_1.3.2                  
-[35] ggrepel_0.9.1                     writexl_1.4.1                    
-[37] Signac_1.10.0                     SingleCellExperiment_1.18.1      
-[39] SummarizedExperiment_1.26.1       Biobase_2.56.0                   
-[41] GenomicRanges_1.48.0              GenomeInfoDb_1.35.15             
-[43] IRanges_2.30.0                    S4Vectors_0.34.0                 
-[45] BiocGenerics_0.42.0               MatrixGenerics_1.8.1             
-[47] matrixStats_0.62.0                ggplot2_3.4.0                    
-[49] dplyr_1.1.4                       sp_1.5-0                         
-[51] SeuratObject_4.1.0                Seurat_4.1.0 
+JASPAR2020_0.99.10                
+BiocParallel_1.30.3              
+scDblFinder_1.10.0                
+ggsignif_0.6.4                   
+harmony_0.1.1                    
+Rcpp_1.0.10                      
+glmGamPoi_1.8.0                   
+DoubletFinder_2.0.3              
+readxl_1.4.0                      
+circlize_0.4.15                  
+ComplexHeatmap_2.12.1             
+ReactomePA_1.40.0                
+TFBSTools_1.34.0                  
+DOSE_3.22.0                      
+org.Hs.eg.db_3.15.0               
+clusterProfiler_4.4.4            
+EnhancedVolcano_1.14.0            
+BSgenome.Hsapiens.UCSC.hg38_1.4.4
+BSgenome_1.64.0                   
+rtracklayer_1.56.1               
+Biostrings_2.64.0                 
+XVector_0.36.0                   
+EnsDb.Hsapiens.v86_2.99.0         
+ensembldb_2.20.2                 
+AnnotationFilter_1.20.0           
+GenomicFeatures_1.48.3           
+AnnotationDbi_1.58.0              
+forcats_0.5.1                    
+stringr_1.4.1                     
+purrr_1.0.2                      
+readr_2.1.2                       
+tidyr_1.2.0                      
+tibble_3.2.1                      
+tidyverse_1.3.2                  
+ggrepel_0.9.1 
+harmony_0.1.1
+writexl_1.4.1                    
+Signac_1.10.0                     
+SingleCellExperiment_1.18.1      
+SummarizedExperiment_1.26.1       
+Biobase_2.56.0                   
+GenomicRanges_1.48.0              
+GenomeInfoDb_1.35.15             
+IRanges_2.30.0                    
+S4Vectors_0.34.0                 
+BiocGenerics_0.42.0               
+MatrixGenerics_1.8.1             
+matrixStats_0.62.0                
+ggplot2_3.4.0                    
+dplyr_1.1.4                       
+sp_1.5-0                         
+SeuratObject_4.1.0                
+Seurat_4.1.0 
+
 
 ## Citation
 
