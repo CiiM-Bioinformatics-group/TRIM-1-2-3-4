@@ -1,0 +1,60 @@
+library(GenomicRanges)
+library(Seurat)
+library(Signac)                                       
+library(dplyr)
+library(ggplot2)
+library(SingleCellExperiment)
+library(tidyr)
+library(GenomeInfoDb)
+library(EnsDb.Hsapiens.v86)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(JASPAR2020)
+library(TFBSTools)
+options(stringsAsFactors = FALSE)
+
+
+#load atac data 
+atac=readRDS('./ATAC_annot.rds')
+DefaultAssay(atac) <- "ATAC"
+peaks <- CallPeaks(atac, macs2.path = "/vol/projects/qzhan/miniconda3/envs/macs2env/bin/macs2",group.by='predicted.id')
+saveRDS(peaks,file='./celltype_peaks.rds')
+peaks=readRDS('./celltype_peaks.rds')
+peaks <- keepStandardChromosomes(peaks, pruning.mode = "coarse")
+peaks <- subsetByOverlaps(x = peaks, ranges = blacklist_hg38_unified, invert = TRUE)
+
+
+macs2_counts <- FeatureMatrix(
+  fragments = atac@assays$ATAC@fragments,
+  features = peaks,
+  cells = colnames(atac)
+)
+annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+seqlevelsStyle(annotations) <- 'UCSC'
+Annotation(atac) = annotations
+
+atac[["peaks"]] <- CreateChromatinAssay(
+  counts = macs2_counts,
+  fragments  = atac@assays$ATAC@fragments,annotation = annotations
+)
+
+
+DefaultAssay(atac) <- "peaks"
+nrow(GetAssayData(atac)) == length(granges(atac))
+seqlevels(peaks)
+atac <- RunTFIDF(atac)
+atac <- FindTopFeatures(atac, min.cutoff = 20)
+
+##motif
+atac=readRDS('./ATAC_peak.rds')
+DefaultAssay(atac) <- "peaks"
+pfm <- getMatrixSet(
+  x = JASPAR2020,
+  opts = list(species = "Homo sapiens", collection = "CORE")
+)
+atac <- AddMotifs(atac, genome = BSgenome.Hsapiens.UCSC.hg38, pfm = pfm)
+
+atac <- RunChromVAR(
+  object = atac,
+  genome = BSgenome.Hsapiens.UCSC.hg38
+)
+saveRDS(atac,file='./ATAC_peak_chromvar.rds')
