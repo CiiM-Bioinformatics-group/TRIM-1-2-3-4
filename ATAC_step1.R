@@ -1,4 +1,3 @@
-.libPaths(c("/vol/projects/zzhang/tools/R/4.2.0/library/","/vol/projects/qzhan/miniconda/lib/R/library","/vol/projects/qzhan/miniconda3/envs/dynamic/lib/R/library/","/vol/projects/qzhan/miniconda3/lib/R/library"))
 library(Seurat)
 library(dplyr)
 library(ggplot2)
@@ -33,12 +32,12 @@ rm(list=ls())
 
 
 pool_dirs <- list(
-  P1 = "/vol/projects/CIIM/TRIM/atac_count/202402849_p1_count/outs",
-  P2 = "/vol/projects/CIIM/TRIM/atac_count/202402849_p2_count/outs",
-  P3 = "/vol/projects/CIIM/TRIM/atac_count/202402849_p3_count/outs",
-  P4 = "/vol/projects/CIIM/TRIM/atac_count/202402849_p4_count/outs",
-  P5 = "/vol/projects/CIIM/TRIM/atac_count/202402849_p5_count/outs",
-  pilot = "/vol/projects/CIIM/TRIM/202402854b_count/outs/outs"
+  P1 = "./TRIM/atac_count/202402849_p1_count/outs",
+  P2 = "./TRIM/atac_count/202402849_p2_count/outs",
+  P3 = "./TRIM/atac_count/202402849_p3_count/outs",
+  P4 = "./TRIM/atac_count/202402849_p4_count/outs",
+  P5 = "./TRIM/atac_count/202402849_p5_count/outs",
+  pilot = "./TRIM/202402854b_count/outs/outs"
 )
 
 batches=c('202402849_p1_count','202402849_p2_count','202402849_p3_count','202402849_p4_count','202402849_p5_count','202402854b_count')
@@ -46,10 +45,10 @@ batches=c('202402849_p1_count','202402849_p2_count','202402849_p3_count','202402
 gr_list = list()
 for (i in batches) {
   if(i != '202402854b_count'){
-   peaks_bed = paste0("/vol/projects/CIIM/TRIM/atac_count/",i,"/outs/peaks.bed") 
+   peaks_bed = paste0("./TRIM/atac_count/",i,"/outs/peaks.bed") 
   }
     else{
-    peaks_bed = paste0("/vol/projects/CIIM/TRIM/202402854b_count/outs/peaks.bed") 
+    peaks_bed = paste0("./TRIM/202402854b_count/outs/peaks.bed") 
     }
   peaksFile = read.table(file = peaks_bed,col.names = c("chr", "start", "end"))
   grFile = makeGRangesFromDataFrame(peaksFile)
@@ -75,24 +74,24 @@ for (i in batches) {
   print(paste0('Processing pool: ', i))
 
   # Reading in singlets pre-processed file#
-  singlets <- read.csv(paste0('/vol/projects/qzhan/TRIM/demultiplex/', i, '/singlet_meta.csv'))
+  singlets <- read.csv(paste0('./TRIM/demultiplex/', i, '/singlet_meta.csv'))
   rownames(singlets) = singlets$barcode
   # Reading in 10X data ATAC
     if ( i != '202402854b_count') {
-        data <- Read10X_h5(paste0("/vol/projects/CIIM/TRIM/atac_count/", i, "/outs/filtered_peak_bc_matrix.h5"))
+        data <- Read10X_h5(paste0("./TRIM/atac_count/", i, "/outs/filtered_peak_bc_matrix.h5"))
         }
     else{
-        data <- Read10X_h5('/vol/projects/CIIM/TRIM/202402854b_count/outs/filtered_peak_bc_matrix.h5')
+        data <- Read10X_h5('./TRIM/202402854b_count/outs/filtered_peak_bc_matrix.h5')
     }
       
   atac = data[,colnames(data) %in% singlets$barcode]
 
   ########creating atac assay #####
     if ( i == '202402854b_count') {
-        frags <- CreateFragmentObject(paste0("/vol/projects/CIIM/TRIM/202402854b_count/outs/fragments.tsv.gz"),cells = colnames(atac))
+        frags <- CreateFragmentObject(paste0("./TRIM/202402854b_count/outs/fragments.tsv.gz"),cells = colnames(atac))
         }
     else {
-        frags <- CreateFragmentObject(paste0("/vol/projects/CIIM/TRIM/atac_count/", i,"/outs/fragments.tsv.gz"),cells = colnames(atac))
+        frags <- CreateFragmentObject(paste0("./TRIM/atac_count/", i,"/outs/fragments.tsv.gz"),cells = colnames(atac))
     }
   
   counts <- FeatureMatrix(fragments = frags,features = combined.peaks,cells = colnames(atac))
