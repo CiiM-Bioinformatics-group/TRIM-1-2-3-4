@@ -1,0 +1,84 @@
+library(tidyverse)
+library(GenomeInfoDb)
+library(EnsDb.Hsapiens.v86)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(EnhancedVolcano)
+library(ggrepel)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(DOSE)
+library(JASPAR2020)
+library(TFBSTools)
+library(ReactomePA)
+library(ComplexHeatmap)
+library(circlize)
+library(readxl)
+pfm <- getMatrixSet(
+  x = JASPAR2020,
+  opts = list(species = 9606, all_versions = FALSE)
+)
+# Get motif annotations
+motif_annotations <- data.frame(
+  motif = names(pfm),
+  TF = sapply(pfm, function(x) x@name)
+)
+
+
+atac=readRDS('./ATAC_peak_chromvar.rds')
+DefaultAssay(atac)='chromvar'
+celltypes=c('CD4_T','CD8_T','Mono/Macro','NK','B')
+stims=c('Asp','BCG','IVIG','R848')
+parts <- str_split_fixed(atac$sample, "_", 3)  
+colnames(parts) <- c("donor","day_group","stim1")
+atac$donor     <- parts[,1]
+atac$day_group <- parts[,2]
+atac$stim1     <- parts[,3]
+D6=subset(atac,day_group=='D6')
+
+outdir <- "/vol/projects/qzhan/TRIM/ATAC/da_TF_new/"    
+for(stype in stims){
+  cat("Processing stimulus:", stype, "\n")
+  
+  all_res <- list() 
+  
+  for(cell in celltypes){
+    cat("   Celltype:", cell, "\n")
+    
+    sub <- subset(D6, stim1 %in% c(stype, 'RPMI') & predicted.id == cell)  
+    Idents(sub)='stim1'
+    DefaultAssay(sub)='chromvar'
+    de_res <- tryCatch(
+      FindMarkers(
+        sub, ident.1 = stype, ident.2 = 'RPMI',
+        assay = "chromvar", group.by = 'stim1',
+        logfc.threshold = 0, mean.fxn = rowMeans, fc.name = "avg_diff"
+      ),
+      error = function(e) NULL
+    )
+    
+    if (!is.null(de_res)) {
+      de_res$TF_motif <- rownames(de_res)
+      de_res$celltype <- cell
+      de_res$stim <- stype
+      de_res$comparison <- paste0(stype, "_vs_RPMI")
+      de_res$day <- "Day6"
+      
+      #  motif_annotations 
+      if (exists("motif_annotations")) {
+        de_res <- merge(de_res, motif_annotations, by.x = "TF_motif", by.y = "motif", all.x = TRUE)
+      }
+      
+      all_res[[cell]] <- de_res
+    }
+  }
+  
+  # merge celltype 
+  if (length(all_res) > 0) {
+    all_res_df <- bind_rows(all_res)
+    filename <- file.path(outdir, paste0("daTF_", stype, "_vsRPMI_D6.csv"))
+    write.csv(all_res_df, file = filename, row.names = FALSE)
+    cat("Saved:", filename, "\n")
+  } else {
+    cat("No valid results for", stype, "\n")
+  }
+}
