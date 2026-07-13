@@ -1,5 +1,4 @@
 #Integrate ATAC and RNA
-.libPaths(c("/vol/projects/zzhang/tools/R/4.2.0/library/","/vol/projects/qzhan/miniconda/lib/R/library","/vol/projects/qzhan/miniconda3/envs/dynamic/lib/R/library/","/vol/projects/qzhan/miniconda3/lib/R/library"))
 library(future)
 library(Seurat)
 library(Signac)
@@ -7,8 +6,8 @@ library(SeuratDisk)
 library(SeuratData)
 
 
-pbmc_rna <- readRDS("../combined_integrated_harmony_sampleNpool_annot.rds")
-pbmc_atac <- readRDS("./ATACIntegrated.rds")
+pbmc_rna <- readRDS("../../combined_integrated_harmony_sampleNpool_annot.rds")
+pbmc_atac <- readRDS("./ATACIntegrated_harmony.rds")
 DefaultAssay(pbmc_atac) <- 'RNA'
 pbmc_rna <- UpdateSeuratObject(pbmc_rna)
 transfer.anchors <- FindTransferAnchors(
@@ -20,7 +19,7 @@ transfer.anchors <- FindTransferAnchors(
 predicted.labels <- TransferData(
   anchorset = transfer.anchors,
   refdata = pbmc_rna$celltype,
-  weight.reduction = pbmc_atac[['integrated_lsi']],
+  weight.reduction = pbmc_atac[['lsi']],
   dims = 2:30
 )
 
@@ -35,7 +34,7 @@ plot1 <- DimPlot(
   repel = TRUE) + NoLegend() + ggtitle('scRNA-seq')
 
 plot2 <- DimPlot(
-  object = pbmc,
+  object = pbmc_atac,
   group.by = 'predicted.id',
   label = TRUE,
   repel = TRUE) + NoLegend() + ggtitle('scATAC-seq')
