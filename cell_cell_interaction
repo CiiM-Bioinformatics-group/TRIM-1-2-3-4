@@ -1,0 +1,148 @@
+# CellChat analysis for Day6_4h trained condition versus RPMI control
+
+suppressPackageStartupMessages({
+  library(Seurat)
+  library(CellChat)
+  library(patchwork)
+  library(future)
+})
+
+options(stringsAsFactors = FALSE)
+
+
+combined_rds <- "../combined_integrated_harmony_sampleNpool_annot.rds"
+TI=subset(combined,day_group=='Day6_4h' & stim1=='R848' )  #change type
+Ctl=subset(combined,day_group=='Day6_4h' & stim1=='RPMI' & stim2=='PolyIC' )
+# IVIG
+#remove <- c("Platelet")
+#TI  <- subset(TI,  !celltype %in% remove)
+#Ctl <- subset(Ctl, celltype!="Platelet")
+
+#TI 
+DefaultAssay(TI)='RNA'
+Idents(TI)='celltype'
+labels <- Idents(TI)
+meta <- data.frame(labels = labels, row.names = names(labels))
+cellChat2 <- createCellChat(object = TI, group.by = "celltype", assay = "RNA")
+CellChatDB <- CellChatDB.human 
+CellChatDB.use <- subsetDB(CellChatDB, search = "Secreted Signaling", key = "annotation")
+cellChat2@DB <- CellChatDB.use
+cellChat2 <- subsetData(cellChat2)
+future::plan("multisession", workers = 4) # do parallel
+cellChat2 <- identifyOverExpressedGenes(cellChat2)
+cellChat2 <- identifyOverExpressedInteractions(cellChat2)
+cellChat2 <- computeCommunProb(cellChat2, type = "triMean")
+cellChat2 <- filterCommunication(cellChat2, min.cells = 10)
+cellChat2 <- computeCommunProbPathway(cellChat2)
+cellChat2 <- aggregateNet(cellChat2)
+#cellChat <- netAnalysis_computeCentrality(cellChat, slot.name = "netP")
+#Ctl
+DefaultAssay(Ctl)='RNA'
+Idents(Ctl)='celltype'   #change
+cellChat1 <- createCellChat(object = Ctl, group.by = "celltype", assay = "RNA")  #change
+CellChatDB <- CellChatDB.human 
+CellChatDB.use <- subsetDB(CellChatDB, search = "Secreted Signaling", key = "annotation")
+cellChat1@DB <- CellChatDB.use
+cellChat1 <- subsetData(cellChat1)
+future::plan("multisession", workers = 4) # do parallel
+cellChat1 <- identifyOverExpressedGenes(cellChat1)
+cellChat1 <- identifyOverExpressedInteractions(cellChat1)
+cellChat1 <- computeCommunProb(cellChat1, type = "triMean")
+cellChat1 <- filterCommunication(cellChat1, min.cells = 10)
+cellChat1 <- computeCommunProbPathway(cellChat1)
+cellChat1 <- aggregateNet(cellChat1)
+
+
+cellchat.TI <- cellChat2
+cellchat.Ctl <- cellChat1
+object.list <- list('IVIG' = cellchat.TI, 'RPMI' = cellchat.Ctl)
+cellchat2 <- mergeCellChat(object.list, add.names = names(object.list))
+
+#cellChat2@netP$pathways
+#check the interaction
+
+pdf('cellchat_monocytes_IVIG_RPMI_barplot_Day6h4.pdf',height=4,width=4)
+gg1 <- compareInteractions(cellchat2, show.legend = F, group = c(1,2))
+gg2 <- compareInteractions(cellchat2, show.legend = F, group = c(1,2), measure = "weight")
+gg3 <- rankNet(cellchat2, mode = "comparison", stacked = T, do.stat = TRUE,color.use=c('#4774BA','#f5b375'))  #'R848'='#623A8A','MDP'='#99212C','Asper'='#428331',"IVIG"="#4774BA"
+gg4 <- rankNet(cellchat2, mode = "comparison", stacked = F, do.stat = TRUE)
+gg3+theme(legend.position = "bottom")
+dev.off()
+
+
+#IVIG
+# [1] "GALECTIN"   "CCL"        "MIF"        "SPP1"       "ANNEXIN"   
+# [6] "FASLG"      "TNF"        "BAFF"       "IL6"        "COMPLEMENT"
+#[11] "VISFATIN"   "CXCL"       "GRN"        "IL1"        "VEGF"      
+#[16] "IL2"        "CSF"        "IFN-II"     "SEMA3"      "ANGPTL"    
+#[21] "CD137"      "APRIL"  
+pathways.show <- c("CCL",'IL2','VEGF','SEMA3') 
+vertex.receiver = seq(1,4)
+
+pdf('cellchat_monocytes_IVIG_only_circle_Day6h4.pdf', height=3, width=12)
+par(mfrow=c(1,4), mar=c(1,1,2,1))  # 
+for (p in pathways.show) {
+  netVisual_aggregate(
+    cellChat2,
+    signaling = p,
+    layout = "circle",color.use = celltype_colors
+  )
+}
+dev.off()
+
+#R848
+#[1] "GALECTIN"   "CCL"        "MIF"        "FASLG"      "CXCL"      
+# [6] "BAFF"       "IL16"       "VISFATIN"   "TNF"        "LT"        
+#[11] "COMPLEMENT" "ANNEXIN"    "CSF"        "IL6"        "APRIL"
+pathways.show <- c("CCL",'IL6','LT','FASLG') 
+vertex.receiver = seq(1,4)
+
+pdf('cellchat_monocytes_R848_only_circle_Day6h4.pdf', height=3, width=12)
+par(mfrow=c(1,4), mar=c(1,1,2,1))  # 
+for (p in pathways.show) {
+  netVisual_aggregate(
+    cellChat2,
+    signaling = p,
+    layout = "circle",color.use = celltype_colors
+  )
+}
+dev.off()
+
+
+
+#Asp
+# [1] "MIF"      "SPP1"     "CCL"      "ANNEXIN"  "IL16"     "CXCL"    
+# [7] "FASLG"    "BAFF"     "FLT3"     "VISFATIN"
+pathways.show <- c("SPP1",'IL16','FASLG','CXCL') 
+vertex.receiver = seq(1,4)
+
+pdf('cellchat_monocytes_Asp_only_circle_Day6h4.pdf', height=3, width=12)
+par(mfrow=c(1,4), mar=c(1,1,2,1))  # 
+for (p in pathways.show) {
+  netVisual_aggregate(
+    cellChat2,
+    signaling = p,
+    layout = "circle",color.use = celltype_colors
+  )
+}
+dev.off()
+
+#BCG
+# [1] "CCL"        "MIF"        "GALECTIN"   "TNF"        "SPP1"      
+# [6] "IL16"       "ANNEXIN"    "GDF"        "CXCL"       "VISFATIN"  
+#[11] "BAFF"       "GRN"        "CSF"        "COMPLEMENT" "IL6"       
+#[16] "LIGHT"      "FLT3"       "TRAIL"      "FASLG"      "CALCR"     
+#[21] "CD137"      
+pathways.show <- c("CCL",'IL6','TNF','CXCL') 
+vertex.receiver = seq(1,4)
+
+pdf('cellchat_monocytes_BCG_only_circle_Day6h4.pdf', height=3, width=12)
+par(mfrow=c(1,4), mar=c(1,1,2,1))  # 
+for (p in pathways.show) {
+  netVisual_aggregate(
+    cellChat2,
+    signaling = p,
+    layout = "circle",color.use = celltype_colors
+  )
+}
+dev.off()
