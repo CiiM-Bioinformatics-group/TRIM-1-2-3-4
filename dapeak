@@ -1,0 +1,46 @@
+library(Seurat)
+library(dplyr)
+library(SingleCellExperiment)
+library(Signac) 
+library(ggrepel)
+library(tidyr)
+library(stringr)
+options(stringsAsFactors = FALSE)
+
+
+peaks=readRDS('./ATAC_peak.rds')
+DefaultAssay(peaks)='peaks'
+peaks$predicted.id[peaks$predicted.id == "Mono/Macro"]<- "MonoMacro"
+peaks$predicted.id[peaks$predicted.id == "CD4_T"]     <- "CD4T"
+peaks$predicted.id[peaks$predicted.id == "CD8_T"]     <- "CD8T"
+celltypes=c('CD4T','CD8T','MonoMacro','NK')
+stims=c('Asp','BCG','IVIG','R848')
+parts <- str_split_fixed(peaks$sample, "_", 3)  
+colnames(parts) <- c("donor","day_group","stim1")
+peaks$donor     <- parts[,1]
+peaks$day_group <- parts[,2]
+peaks$stim1     <- parts[,3]
+D6=subset(peaks,day_group=='D6')
+
+da_peaks_list <- list()
+for(cell in celltypes){
+    for(stim1 in stims){
+        sub=subset(D6,predicted.id==cell)
+        Idents(sub)='stim1'
+        da_peaks <- FindMarkers(sub,ident.1 = stim1,ident.2 = 'RPMI',group.by = 'stim1',min.pct = 0.05,test.use = 'LR',latent.vars = c('nCount_peaks','donor'))  #change min.pct from 0.05 to 0.1， latent vars add donor
+        da_peaks$CellType <- cell
+        da_peaks$stim1 <- stim1
+        da_peaks$comp <- 'vs_RPMI'
+        da_peaks$day_group <- 'Day6'
+        da_peaks$rowname=rownames(da_peaks)
+        #closest gene
+        closest_features <- ClosestFeature(peaks, regions = rownames(da_peaks))
+        da_peaks <- merge(da_peaks, closest_features, by.x = "rowname", by.y = "query_region", all.x = TRUE)
+        da_peaks$closest_gene <- da_peaks$gene_name
+
+        filename=paste0('/vol/projects/qzhan/TRIM/ATAC/da_peak/dapeak_',stim1,'vsRPMI_',cell,'_005.csv')
+        #filename=paste0('/vol/projects/qzhan/TRIM/Figures/dapeak_',stim1,'vsRPMI_',cell,'.csv')
+        write.csv(da_peaks,file=filename)
+    }
+
+}
