@@ -1,7 +1,5 @@
 # TRIM-1-2-3-4
 
-Code accompanying the study of four trained immunity programs induced by BCG, *Aspergillus*, R848 and IVIG in human peripheral blood immune cells.
-
 This repository contains custom R, Python and command-line scripts used for single-cell RNA-seq, single-nucleus ATAC-seq and downstream integrative analyses, including differential gene expression, chromatin accessibility, regulon inference, cell-cell communication and disease enrichment analyses.
 
 ## Overview
@@ -10,9 +8,8 @@ Peripheral blood mononuclear cells (PBMCs) from healthy donors were trained in v
 
 - scRNA-seq quality control, doublet removal, normalization, integration and cell-type annotation.
 - Differential gene expression analysis across trained immunity conditions.
-- snATAC-seq quality control, TF-IDF normalization, LSI dimensional reduction and Harmony integration.
+- snATAC-seq quality control and integration.
 - Gene activity scoring and transfer of cell-type labels from the annotated scRNA-seq reference.
-- Peak-level chromatin accessibility analysis and peak-gene linkage analysis.
 - Regulon and transcription factor activity analysis using pySCENIC.
 - Cell-cell communication analysis using CellChat.
 - Gene set enrichment analyses in external disease datasets.
@@ -22,9 +19,11 @@ Peripheral blood mononuclear cells (PBMCs) from healthy donors were trained in v
 | File | Description |
 | --- | --- |
 | `trim_qc_harmony_pipeline.R` | scRNA-seq sample loading, QC filtering, scDblFinder doublet removal, Harmony integration, clustering and broad cell-type annotation. |
-| `trim_deg_pipeline.R` | Differential gene expression analysis for Day 6, Day 0 + 4 h and Day 6 + 4 h comparisons across major immune cell types. |
-| `trim_cellchat_pipeline.R` | CellChat analysis comparing trained conditions with matched RPMI controls. |
+| `DEG_analysis.R` | Differential gene expression analysis for Day 6, Day 0 + 4 h and Day 6 + 4 h comparisons across major immune cell types. |
+| `TIGs_accross4types.R` | Heatmap for comparison the effect size of TIGs across 4 TRIMs. Enrichment for the module genes. |
+| `cell_cell_interaction.R` | CellChat analysis comparing trained conditions with matched RPMI controls. |
 | `Regulon_scenic_pipeline.R` | R workflow for regulon activity analysis, differential regulon activity testing and TIG-associated TF prioritization. |
+| `ATAC_step1.R`,`ATAC_step2.R`,`ATAC_step3.R` | Steps for snATAC-seq data pre-processiong and integration. |
 | `Regulon_scenic_commands.md` | Python and shell commands used to create loom files and run pySCENIC. |
 | `trim_external_disease_gsea_pipeline.R` | Gene set enrichment analysis of TRIM-induced gene signatures in external disease datasets. |
 
@@ -42,73 +41,40 @@ The analyses were performed using established open-source software and R/Python 
 
 ## Data Availability
 
-The scRNA-seq and snATAC-seq data generated in this study will be made available through the European Genome-phenome Archive (EGA). Accession codes are pending and will be provided upon publication. Access to controlled human sequencing data will be managed through EGA in accordance with applicable ethical and data protection regulations.
+The scRNA-seq and snATAC-seq data generated in this study will be made available through the European Genome-phenome Archive (EGA). Accession codes are pending and will be provided upon publication. 
 
-Large sequencing files, processed Seurat objects and controlled-access human genomic data are not included in this repository.
-
-## Usage
-
-The scripts are intended to be run on a high-performance computing environment with access to the relevant raw sequencing outputs and processed intermediate objects.
-
-Before running the scripts, update the input paths at the top of each file to match your local directory structure. Several paths in the scripts point to project-specific server locations and are provided to document the analysis workflow.
-
-Example:
-
-```r
-combined_rds <- "../combined_integrated_harmony_sampleNpool_annot.rds"
-```
-
-The typical analysis order is:
-
-1. Process scRNA-seq data and generate the integrated annotated object:
-
-```bash
-Rscript trim_qc_harmony_pipeline.R
-```
-
-2. Run differential gene expression analyses:
-
-```bash
-Rscript trim_deg_pipeline.R
-```
-
-3. Run CellChat communication analysis:
-
-```bash
-Rscript trim_cellchat_pipeline.R
-```
-
-4. Run pySCENIC commands described in:
-
-```text
-Regulon_scenic_commands.md
-```
-
-5. Analyze regulon activity and TF enrichment:
-
-```bash
-Rscript Regulon_scenic_pipeline.R
-```
-
-6. Run external disease gene set enrichment analyses:
-
-```bash
-Rscript trim_external_disease_gsea_pipeline.R
-```
-
-## Notes on snATAC-seq Integration
-
-The snATAC-seq workflow used TF-IDF normalization followed by SVD/LSI dimensional reduction. The first LSI component was excluded because of its correlation with sequencing depth. Batch effects across samples and sequencing pools were corrected using Harmony on LSI dimensions 2-30. UMAP, nearest-neighbor graph construction and clustering were performed using the Harmony embeddings. Gene activity scores were computed with `GeneActivity` and log-normalized before label transfer from the annotated scRNA-seq reference.
 
 ## Reproducibility
 
-Custom scripts used for data preprocessing, statistical analysis and visualization are provided in this repository. Analyses rely on external data files and software environments that should be configured according to the Methods section of the manuscript.
+Custom scripts used for data preprocessing, statistical analysis and visualization are provided in this repository.
 
-For reproducibility, users should record package versions with:
-
-```r
-sessionInfo()
-```
+# sessionInfo()
+[1] JASPAR2020_0.99.10                BiocParallel_1.30.3              
+ [3] scDblFinder_1.10.0                ggsignif_0.6.4                   
+ [5] harmony_0.1.1                     Rcpp_1.0.10                      
+ [7] glmGamPoi_1.8.0                   DoubletFinder_2.0.3              
+ [9] readxl_1.4.0                      circlize_0.4.15                  
+[11] ComplexHeatmap_2.12.1             ReactomePA_1.40.0                
+[13] TFBSTools_1.34.0                  DOSE_3.22.0                      
+[15] org.Hs.eg.db_3.15.0               clusterProfiler_4.4.4            
+[17] EnhancedVolcano_1.14.0            BSgenome.Hsapiens.UCSC.hg38_1.4.4
+[19] BSgenome_1.64.0                   rtracklayer_1.56.1               
+[21] Biostrings_2.64.0                 XVector_0.36.0                   
+[23] EnsDb.Hsapiens.v86_2.99.0         ensembldb_2.20.2                 
+[25] AnnotationFilter_1.20.0           GenomicFeatures_1.48.3           
+[27] AnnotationDbi_1.58.0              forcats_0.5.1                    
+[29] stringr_1.4.1                     purrr_1.0.2                      
+[31] readr_2.1.2                       tidyr_1.2.0                      
+[33] tibble_3.2.1                      tidyverse_1.3.2                  
+[35] ggrepel_0.9.1                     writexl_1.4.1                    
+[37] Signac_1.10.0                     SingleCellExperiment_1.18.1      
+[39] SummarizedExperiment_1.26.1       Biobase_2.56.0                   
+[41] GenomicRanges_1.48.0              GenomeInfoDb_1.35.15             
+[43] IRanges_2.30.0                    S4Vectors_0.34.0                 
+[45] BiocGenerics_0.42.0               MatrixGenerics_1.8.1             
+[47] matrixStats_0.62.0                ggplot2_3.4.0                    
+[49] dplyr_1.1.4                       sp_1.5-0                         
+[51] SeuratObject_4.1.0                Seurat_4.1.0 
 
 ## Citation
 
