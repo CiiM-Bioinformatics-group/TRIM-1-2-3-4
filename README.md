@@ -50,9 +50,9 @@ The scRNA-seq and snATAC-seq data generated in this study will be made available
 Custom scripts used for data preprocessing, statistical analysis and visualization are provided in this repository.
 
 # sessionInfo()
-JASPAR2020_0.99.10
-BiocParallel_1.30.3
-scDblFinder_1.10.0                
+JASPAR2020_0.99.10 
+BiocParallel_1.30.3 
+scDblFinder_1.10.0
 ggsignif_0.6.4                   
 harmony_0.1.1                    
 Rcpp_1.0.10                      
@@ -85,8 +85,8 @@ tidyr_1.2.0
 tibble_3.2.1                      
 tidyverse_1.3.2                  
 ggrepel_0.9.1 
-harmony_0.1.1 
-writexl_1.4.1                    
+harmony_0.1.1
+writexl_1.4.1
 Signac_1.10.0                     
 SingleCellExperiment_1.18.1      
 SummarizedExperiment_1.26.1       
